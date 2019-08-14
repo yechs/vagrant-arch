@@ -1,18 +1,44 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-# All Vagrant configuration is done below. The "2" in Vagrant.configure
-# configures the configuration version (we support older styles for
-# backwards compatibility). Please don't change it unless you know what
-# you're doing.
-Vagrant.configure("2") do |config|
-  # The most common configuration options are documented and commented below.
-  # For a complete reference, please see the online documentation at
-  # https://docs.vagrantup.com.
+require 'yaml'
 
-  # Every Vagrant development environment requires a box. You can search for
-  # boxes at https://vagrantcloud.com/search.
+VAGRANTFILE_API_VERSION ||= "2"
+
+workDir = File.expand_path(File.dirname(__FILE__))
+confDir = $confDir ||= workDir
+
+# Paths for configuration files
+configYamlPath = confDir + "/config.yaml"
+afterScriptPath = confDir + "/after.sh" # will be run after the machine is provisioned
+aliasesPath = confDir + "/aliases" # bash_aliases
+
+# importing Archlinux class
+require workDir + '/scripts/archlinux.rb'
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
   config.vm.box = "archlinux/archlinux"
+
+  # Load Settings from ./config.yaml
+  if File.exist? configYamlPath then
+    settings = YAML::load(File.read(configYamlPath))
+  else
+    abort "config.yaml not found in #{confDir}"
+  end
+
+  Archlinux.configure(config, settings)
+
+  # Set shell aliases
+  if File.exist? aliasesPath then
+  end
+
+  # Run afterscript
+  if File.exist? afterScriptPath then
+  end
+
+
+  # The following codes are WIP
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
