@@ -1,0 +1,24 @@
+version: 2
+jobs:
+  rubycheck:
+    docker:
+      - image: circleci/ruby:2.6.3
+    steps:
+      - checkout
+      - run:
+          name: Install rubocop
+          command: gem install rubocop
+      - run:
+          name: Check style for archlinux.rb
+          command: rubocop scripts/archlinux.rb
+
+  shellcheck:
+    docker:
+      - image: koalaman/shellcheck-alpine:stable
+    steps:
+      - checkout
+      - run:
+          name: Check Scripts
+          command: |
+            find . -type f -name '*.sh' | wc -l
+            find . -type f -name '*.sh' | xargs shellcheck --external-sources
