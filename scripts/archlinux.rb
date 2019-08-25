@@ -47,6 +47,52 @@ class Archlinux
       if settings.has_key?('gui') && settings['gui']
         v.gui = true
       end
+    end
+
+    # Override Default SSH port
+    if settings.has_key?('default_ssh_port')
+      config.vm.network "forwarded_port",
+        guest: 22,
+        host: settings['default_ssh_port'],
+        auto_correct: false,
+        id: "ssh"
+    end
+
+    # Default Port Forwarding
+    default_ports = {
+      80 => 8000,
+      443 => 44300,
+      3306 => 33060,
+      4040 => 4040,
+      5432 => 54320,
+      8025 => 8025,
+      9600 => 9600,
+      27017 => 27017
+    }
+
+    # Use Default Port Forwarding Unless Stated Otherwise
+    unless settings.has_key?('default_ports') && settings['default_ports'] == false
+      default_ports.each do |guest, host|
+        # if custom port settings does not override default
+        unless settings['ports'].any? { |mapping| mapping['guest'] == guest }
+          config.vm.network 'forwarded_port',
+            guest: guest,
+            host: host,
+            auto_correct: true
+        end
+      end
+    end
+
+    # Add Custom Ports From Configuration
+    if settings.has_key?('ports')
+      settings['ports'].each do |port|
+        config.vm.network 'forwarded_port',
+          guest: port['guest'],
+          host: port['host'],
+          protocol: port['protocol'] ||= 'tcp',
+          auto_correct: true
+      end
+    end
 
   end
 
