@@ -22,3 +22,10 @@ jobs:
           command: |
             find . -type f -name '*.sh' | wc -l
             find . -type f -name '*.sh' | xargs shellcheck --external-sources
+
+workflows:
+  version: 2
+  Style_linter:
+    jobs:
+      - rubycheck
+      - shellcheck
