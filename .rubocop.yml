@@ -11,6 +11,9 @@ Metrics/MethodLength:
 Metrics/PerceivedComplexity:
   Enabled: false
 
+Metrics/LineLength:
+  Enabled: false # since we need long in-line shell commands
+
 Layout/AlignArguments:
   EnforcedStyle: with_fixed_indentation
 

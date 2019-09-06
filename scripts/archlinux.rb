@@ -102,7 +102,7 @@ class Archlinux
     if settings.include? 'pubkey'
       if File.exist? File.expand_path(settings['pubkey'])
         config.vm.provision 'shell' do |s|
-          s.inline = "echo $1 | grep -xq \"$1\" /home/vagrant/.ssh/authorized_keys || echo \"\n$1\" | tee -a /home/vagrant/.ssh/authorized_keys"
+          s.inline = 'echo $1 | grep -xq \"$1\" /home/vagrant/.ssh/authorized_keys || echo \"\n$1\" | tee -a /home/vagrant/.ssh/authorized_keys'
           s.args = [File.read(File.expand_path(settings['pubkey']))]
           # TODO: What's the first echo command for?
         end
@@ -120,7 +120,7 @@ class Archlinux
         if File.exist? File.expand_path(key)
           config.vm.provision 'shell' do |s|
             s.privileged = false
-            s.inline = "echo \"$1\" > /home/vagrant/.ssh/$2 && chmod 600 /home/vagrant/.ssh/$2"
+            s.inline = 'echo \"$1\" > /home/vagrant/.ssh/$2 && chmod 600 /home/vagrant/.ssh/$2'
             s.args = [
               File.read(File.expand_path(key)), key.split('/').last
             ]
@@ -131,7 +131,6 @@ class Archlinux
         end
       end
     end
-
   end
 
   def self.backup_mysql(database, dir, config)
