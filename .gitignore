@@ -1,0 +1,7 @@
+# Vagrant-generated files
+/.vagrant
+
+# Database backups
+/mysqldump.sql.gz
+/mysql_backup
+/postgres_backup
