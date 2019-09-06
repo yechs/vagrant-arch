@@ -11,17 +11,25 @@ Metrics/MethodLength:
 Metrics/PerceivedComplexity:
   Enabled: false
 
+Metrics/ClassLength:
+  Enabled: false
+
 Metrics/LineLength:
   Enabled: false # since we need long in-line shell commands
 
-Layout/AlignArguments:
-  EnforcedStyle: with_fixed_indentation
-
 Style/NumericLiterals:
   MinDigits: 6 # so that port numbers won't be affected
+
+# Personal preferences for styles
+
+Layout/AlignArguments:
+  EnforcedStyle: with_fixed_indentation
 
 Style/GuardClause:
   Enabled: false
 
 Style/Documentation:
+  Enabled: false
+
+Style/IfUnlessModifier:
   Enabled: false

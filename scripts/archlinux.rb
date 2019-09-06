@@ -49,7 +49,9 @@ class Archlinux
       v.customize ['modifyvm', :id, '--ostype', 'ArchLinux_64']
 
       # Headless vs GUI
-      v.gui = true if settings.key?('gui') && settings['gui']
+      if settings.key?('gui') && settings['gui']
+        v.gui = true
+      end
     end
 
     # Override Default SSH port
@@ -77,7 +79,9 @@ class Archlinux
     unless settings.key?('default_ports') && settings['default_ports'] == false
       default_ports.each do |guest, host|
         # if custom port settings override default
-        next if settings['ports'].any? { |mapping| mapping['guest'] == guest }
+        if settings['ports'].any? { |mapping| mapping['guest'] == guest }
+          next
+        end
 
         config.vm.network 'forwarded_port',
           guest: guest,
@@ -151,11 +155,11 @@ class Archlinux
           if folder['type'] == 'nfs'
             # Available on *nix & Mac OS Host
             # Check https://www.vagrantup.com/docs/synced-folders/nfs.html
-            mount_options = folder['mount_options'] ? folder['mount_options'] : ['actimeo=1', 'nolock']
+            mount_options = folder['mount_options'] || ['actimeo=1', 'nolock']
           elsif folder['type'] == 'smb'
             # Available on Windows & Mac OS Host
             # Check https://www.vagrantup.com/docs/synced-folders/smb.html
-            mount_options = folder['mount_options'] ? folder['mount_options'] : ['vers=3.02', 'mfsymlinks']
+            mount_options = folder['mount_options'] || ['vers=3.02', 'mfsymlinks']
 
             smb_creds = {
               smb_host: folder['smb_host'],
@@ -164,11 +168,11 @@ class Archlinux
             }
           end
 
-          # merge with options
-          options = (folder['options'] || {}).merge({ mount_options: mount_options }).merge(smb_creds || {})
+          # Merge all options into one Hash object
+          options = (folder['options'] || {}).merge(mount_options: mount_options).merge(smb_creds || {})
 
           # Double-splat (**) operator only works with symbol keys, so convert
-          options.keys.each{|k| options[k.to_sym] = options.delete(k) }
+          options.keys.each { |k| options[k.to_sym] = options.delete(k) }
 
           config.vm.synced_folder folder['map'], folder['to'],
             type: folder['type'] ||= nil, # Defaults to Virtualbox if using
