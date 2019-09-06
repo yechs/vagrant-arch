@@ -96,13 +96,49 @@ class Archlinux
           auto_correct: true
       end
     end
+
+    # Configure SSH Keys
+    # Add Public Key for SSH into the box
+    if settings.include? 'pubkey'
+      if File.exist? File.expand_path(settings['pubkey'])
+        config.vm.provision 'shell' do |s|
+          s.inline = "echo $1 | grep -xq \"$1\" /home/vagrant/.ssh/authorized_keys || echo \"\n$1\" | tee -a /home/vagrant/.ssh/authorized_keys"
+          s.args = [File.read(File.expand_path(settings['pubkey']))]
+          # TODO: What's the first echo command for?
+        end
+      end
+    end
+
+    # Copy The SSH Private Keys To The Box
+    # (for SSH into remote within the box)
+    if settings.include? 'privkeys'
+      if settings['privkeys'].to_s.length.zero?
+        puts 'Check your configuration file, you have no private key(s) specified.'
+        exit
+      end
+      settings['privkeys'].each do |key|
+        if File.exist? File.expand_path(key)
+          config.vm.provision 'shell' do |s|
+            s.privileged = false
+            s.inline = "echo \"$1\" > /home/vagrant/.ssh/$2 && chmod 600 /home/vagrant/.ssh/$2"
+            s.args = [
+              File.read(File.expand_path(key)), key.split('/').last
+            ]
+          end
+        else
+          puts 'Check your configuration file, the path to your private key does not exist.'
+          exit
+        end
+      end
+    end
+
   end
 
   def self.backup_mysql(database, dir, config)
-    # TO-DO
+    # TODO
   end
 
   def self.backup_postgres(databse, dir, config)
-    # TO-DO
+    # TODO
   end
 end
