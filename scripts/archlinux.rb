@@ -5,7 +5,7 @@ class Archlinux
     ENV['VAGRANT_DEFAULT_PROVIDER'] = settings['provider'] ||= 'virtualbox'
 
     # Configure Local Variable To Access Scripts From Remote Location
-    # script_dir = File.dirname(__FILE__)
+    script_dir = File.dirname(__FILE__)
 
     # Configure the Box
     config.vm.box = settings['box'] ||= 'archlinux/archlinux'
@@ -189,6 +189,56 @@ class Archlinux
         end
       end
     end
+
+    # Create folder for opt-in features lockfiles
+    config.vm.provision 'shell',
+      inline: 'mkdir -p /home/vagrant/.opt-in-features'
+    config.vm.provision 'shell',
+      inline: 'chown -Rf vagrant:vagrant /home/vagrant/.opt-in-features'
+
+    # Installing features
+    if settings.key?('features')
+      settings['features'].each do |feature|
+        feature_name = feature.keys[0]
+        feature_var = feature[feature_name] # true/false flag or a Hash containing the flag and parameters passed in
+        feature_path = script_dir + '/features/' + feature_name + '.sh'
+
+        # If feature_var is a Hash
+        if feature_var.instance_of? Hash
+          feature_flag = feature_var['enabled']
+          feature_param = feature_var['parameters']
+        else
+          # the feature_var is a simple true/false flag
+          feature_flag = feature_var
+          # Set param to empty hash, so it's not passed to scripts
+          feature_param = {}
+        end
+
+        if feature_flag == false
+          config.vm.provision 'shell',
+            inline: "[SKIPPING] #{feature_name}: set to false."
+          next
+        end
+
+        # if feature does not exist
+        unless File.exist? File.expand_path(feature_path)
+          config.vm.provision 'shell',
+            inline: "[SKIPPING] #{feature_name}: feature not found."
+          next
+        end
+
+        # Install feature
+        config.vm.provision 'shell' do |s|
+          s.name = '[INSTALLING] ' + feature_name
+          s.path = feature_path
+          s.env = feature_param
+        end
+      end
+    end
+
+    # TODO: Deal w/ Nginx, Database, ...
+
+    # TODO: Deal w/ env vars
   end
 
   def self.backup_mysql(database, dir, config)
